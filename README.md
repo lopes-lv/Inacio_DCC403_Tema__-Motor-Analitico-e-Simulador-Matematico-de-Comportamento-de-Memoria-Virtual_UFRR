@@ -18,7 +18,7 @@ A ferramenta é protegida contra vazamentos de memória (0% *memory leak* valida
 
 ---
 
-## ⚙️ Pré-requisitos
+## Pré-requisitos
 
 Para compilar e executar este projeto, você precisará de um ambiente Linux com as seguintes ferramentas instaladas e precisa retirar os arquivos de rastro do zip e deixa-los na pasta principal do projeto sem esta dentro de nenhuma pasta :
 * Compilador **GCC**
@@ -27,7 +27,7 @@ Para compilar e executar este projeto, você precisará de um ambiente Linux com
 
 ---
 
-## 🛠️ Como Compilar e Gerenciar o Projeto (Makefile)
+## Como Compilar e Gerenciar o Projeto (Makefile)
 
 Todo o fluxo de compilação, limpeza e automação de testes foi abstraído através do `Makefile` para garantir a reprodutibilidade. No diretório raiz do projeto, abra o terminal e utilize os seguintes comandos de acordo com a sua necessidade:
 
@@ -43,7 +43,7 @@ Todo o fluxo de compilação, limpeza e automação de testes foi abstraído atr
 * **`make bateria_test`**
   Dispara o motor de testes automatizados para validação acadêmica. Este comando utiliza laços de repetição nativos do terminal para executar o simulador dezenas de vezes, cruzando automaticamente três tamanhos de página (4 KB, 8 KB e 16 KB) com cinco escalonamentos de memória física (128 KB a 1024 KB) sob as três políticas (FIFO, LRU e Random).
   
-## 🚀 Como Executar
+## Como Executar
 
 O simulador requer quatro parâmetros obrigatórios via linha de comando:
 
@@ -56,7 +56,7 @@ Para rodar a política LRU usando páginas de 4 KB em uma memória física de 12
 
 ---
 
-## 📊 Automação de Testes (Make)
+## Automação de Testes (Make)
 
 Para fins de validação científica, o `Makefile` inclui rotinas de automação que executam baterias de testes cruzando múltiplos tamanhos de página e escalonamento de memória.
 
@@ -77,7 +77,7 @@ Para executar as simulações em lote (variando páginas de 4KB, 8KB, 16KB e mem
 
 ---
 
-## 👨‍💻 Autor
+## Autor
 
 **Inácio Viana**   
 *Estudante de Ciência da Computação - UFRR* | [GitHub](https://github.com/lopes-lv)
