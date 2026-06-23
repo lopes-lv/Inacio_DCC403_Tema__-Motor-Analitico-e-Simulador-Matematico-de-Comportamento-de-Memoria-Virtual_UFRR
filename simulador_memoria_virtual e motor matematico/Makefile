@@ -1,33 +1,26 @@
-# Nome do compilador
+
 CC = gcc
 
-# Flags do compilador (exibe todos os alertas de seguranca)
 CFLAGS = -Wall
 
 # Nome do seu arquivo executavel final
 TARGET = edge-profiler
 
-# Regra padrao executada quando se digita apenas "make"
 all: $(TARGET)
 
-# Regra para compilar o projeto unindo os arquivos .c
 $(TARGET): main.c memoria.c
 	$(CC) $(CFLAGS) main.c memoria.c -o $(TARGET)
 
-# --------------------------------------------------------------------
-# 1. REGRA INTERATIVA (RUN)
-# --------------------------------------------------------------------
+
 run: $(TARGET)
 	@read -p "Qual politica de substituicao deseja usar (lru, fifo, random)? " pol; \
 	echo "\n>>> Executando $$pol com paginas de 4KB e memoria de 512KB..."; \
 	./$(TARGET) $$pol trace.log 4 512
 
-# --------------------------------------------------------------------
-# 2. BATERIA DE TESTES UNIFICADA (ARTIGO SBC)
-# --------------------------------------------------------------------
+
 bateria_test: $(TARGET)
 	@echo "=================================================="
-	@echo "   BATERIA UNIFICADA - ARTIGO SBC (PARETO 80/20)  "
+	@echo "   BATERIA UNIFICADA  "
 	@echo "=================================================="
 	@for pol in fifo lru random; do \
 		for mem in 128 256 512 768 1024; do \
@@ -39,9 +32,7 @@ bateria_test: $(TARGET)
 	@echo "             BATERIA DE TESTES CONCLUIDA!         "
 	@echo "=================================================="
 
-# --------------------------------------------------------------------
-# 3. TESTE DA ANOMALIA DE BELADY (FIFO vs LRU)
-# --------------------------------------------------------------------
+
 test_belady: $(TARGET)
 	@echo "=================================================="
 	@echo "       FORCANDO A ANOMALIA DE BELADY (FIFO)       "
@@ -58,9 +49,7 @@ test_belady: $(TARGET)
 	@echo "\n[LRU] >>> Cenario 2: 4 Quadros (16 KB) -> Logica Restaurada!"
 	@./$(TARGET) lru trace_belady.log 4 16
 
-# --------------------------------------------------------------------
-# 4. TESTE DE INUNDACAO SEQUENCIAL
-# --------------------------------------------------------------------
+
 test_sequencial: $(TARGET)
 	@echo "=================================================="
 	@echo "   INUNDACAO SEQUENCIAL (COLAPSO DE LRU E FIFO)   "
@@ -71,9 +60,7 @@ test_sequencial: $(TARGET)
 	@./$(TARGET) lru trace_sequencial.log 16 512
 
 
-# --------------------------------------------------------------------
-# LIMPEZA E AUDITORIA
-# --------------------------------------------------------------------
+
 clean:
 	rm -f $(TARGET)
 
