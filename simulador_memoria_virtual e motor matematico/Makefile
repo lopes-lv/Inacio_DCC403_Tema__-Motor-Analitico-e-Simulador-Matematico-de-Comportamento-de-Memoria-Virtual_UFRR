@@ -1,4 +1,4 @@
-# Nome do compilador1
+# Nome do compilador
 CC = gcc
 
 # Flags do compilador (exibe todos os alertas de seguranca)
@@ -14,74 +14,69 @@ all: $(TARGET)
 $(TARGET): main.c memoria.c
 	$(CC) $(CFLAGS) main.c memoria.c -o $(TARGET)
 
-test_lru: $(TARGET)
-	@echo "=================================================="
-	@echo "   INICIANDO DE TESTES DE MEMORIA- LRU        "
-	@echo "=================================================="
-	@echo "\n>>> TESTE 1: Analise de Desempenho - 4KB"
-	@./$(TARGET) lru trace.log 4 1024
-	@echo "\n>>> TESTE 2: Analise de Desempenho - 8KB"
-	@./$(TARGET) lru trace.log 8 1024
-	@echo "\n>>> TESTE 3: Analise de Desempenho - 16KB"
-	@./$(TARGET) lru trace.log 16 1024
-	@echo "           \nBATERIA DE TESTES CONCLUIDA!           "
-	
-test_fifo: $(TARGET)
-	@echo "=================================================="
-	@echo "   INICIANDO DE TESTES DE MEMORIA- FIFO        "
-	@echo "=================================================="
-	@echo "\n>>> TESTE 1: Analise de Desempenho - 4KB"
-	@./$(TARGET) fifo trace.log 4 1024
-	@echo "\n>>> TESTE 2: Analise de Desempenho - 8KB"
-	@./$(TARGET) fifo trace.log 8 1024
-	@echo "\n>>> TESTE 3: Analise de Desempenho - 16KB"
-	@./$(TARGET) fifo trace.log 16 1024
-	@echo "           \nBATERIA DE TESTES CONCLUIDA!           "
+# --------------------------------------------------------------------
+# 1. REGRA INTERATIVA (RUN)
+# --------------------------------------------------------------------
+run: $(TARGET)
+	@read -p "Qual politica de substituicao deseja usar (lru, fifo, random)? " pol; \
+	echo "\n>>> Executando $$pol com paginas de 4KB e memoria de 512KB..."; \
+	./$(TARGET) $$pol trace.log 4 512
 
-test_random: $(TARGET)
+# --------------------------------------------------------------------
+# 2. BATERIA DE TESTES UNIFICADA (ARTIGO SBC)
+# --------------------------------------------------------------------
+bateria_test: $(TARGET)
 	@echo "=================================================="
-	@echo "   INICIANDO DE TESTES DE MEMORIA- RANDOM        "
+	@echo "   BATERIA UNIFICADA - ARTIGO SBC (PARETO 80/20)  "
 	@echo "=================================================="
-	@echo "\n>>> TESTE 1: Analise de Desempenho - 4KB"
-	@./$(TARGET) random trace.log 4 1024
-	@echo "\n>>> TESTE 2: Analise de Desempenho - 8KB"
-	@./$(TARGET) random trace.log 8 1024
-	@echo "\n>>> TESTE 3: Analise de Desempenho - 16KB"
-	@./$(TARGET) random trace.log 16 1024
-	@echo "           \nBATERIA DE TESTES CONCLUIDA!           "
+	@for pol in fifo lru random; do \
+		for mem in 128 256 512 768 1024; do \
+			echo "\n>>> Politica: $$pol | Pagina: 4KB | Memoria Fisica: $$mem KB"; \
+			./$(TARGET) $$pol trace.log 4 $$mem; \
+		done; \
+	done
+	@echo "\n=================================================="
+	@echo "             BATERIA DE TESTES CONCLUIDA!         "
+	@echo "=================================================="
 
-
+# --------------------------------------------------------------------
+# 3. TESTE DA ANOMALIA DE BELADY (FIFO vs LRU)
+# --------------------------------------------------------------------
 test_belady: $(TARGET)
 	@echo "=================================================="
 	@echo "       FORCANDO A ANOMALIA DE BELADY (FIFO)       "
 	@echo "=================================================="
-	@echo "\n>>> Cenario 1: Memoria FISICA PEQUENA (3 Quadros / 12 KB)"
+	@echo "\n[FIFO] >>> Cenario 1: 3 Quadros (12 KB)"
 	@./$(TARGET) fifo trace_belady.log 4 12
-	@echo "\n>>> Cenario 2: Memoria FISICA MAIOR (4 Quadros / 16 KB)"
+	@echo "\n[FIFO] >>> Cenario 2: 4 Quadros (16 KB) -> Anomalia Ocorre!"
 	@./$(TARGET) fifo trace_belady.log 4 16
 	@echo "\n=================================================="
-	@echo "   Observe o paradoxo nos resultados acima:"
-	@echo "   Mais capacidade de memoria = Mais Page Faults!"
-	@echo "=================================================="
-
-test_belady_lru: $(TARGET)
-	@echo "=================================================="
 	@echo "     PROVANDO A IMUNIDADE DO LRU (SEM ANOMALIA)   "
 	@echo "=================================================="
-	@echo "\n>>> Cenario 1: Memoria FISICA PEQUENA (3 Quadros / 12 KB)"
+	@echo "\n[LRU] >>> Cenario 1: 3 Quadros (12 KB)"
 	@./$(TARGET) lru trace_belady.log 4 12
-	@echo "\n>>> Cenario 2: Memoria FISICA MAIOR (4 Quadros / 16 KB)"
+	@echo "\n[LRU] >>> Cenario 2: 4 Quadros (16 KB) -> Logica Restaurada!"
 	@./$(TARGET) lru trace_belady.log 4 16
-	@echo "\n=================================================="
-	@echo "   Observe a logica restaurada:"
-	@echo "   Mais memoria = Menos Page Faults (Como deve ser!)"
-	@echo "=================================================="
 
-# Regra para limpar o diretorio (apaga o executavel)
+# --------------------------------------------------------------------
+# 4. TESTE DE INUNDACAO SEQUENCIAL
+# --------------------------------------------------------------------
+test_sequencial: $(TARGET)
+	@echo "=================================================="
+	@echo "   INUNDACAO SEQUENCIAL (COLAPSO DE LRU E FIFO)   "
+	@echo "=================================================="
+	@echo "\n>>> Testando FIFO..."
+	@./$(TARGET) fifo trace_sequencial.log 16 512
+	@echo "\n>>> Testando LRU..."
+	@./$(TARGET) lru trace_sequencial.log 16 512
+
+
+# --------------------------------------------------------------------
+# LIMPEZA E AUDITORIA
+# --------------------------------------------------------------------
 clean:
 	rm -f $(TARGET)
 
-# Regra para auditar vazamentos de memoria no código (Requer Valgrind)
 valgrind: $(TARGET)
 	@echo "Iniciando auditoria profunda de memoria com Valgrind..."
 	valgrind --leak-check=full --show-leak-kinds=all ./$(TARGET) lru trace.log 4 1024
